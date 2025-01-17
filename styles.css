@@ -93,10 +93,7 @@ html {
   }
 }
 /* Responsive Image Setup */
-.desktop-image {
-  width: 100%;
-  height: auto;
-}
+
 
 .mobile-image {
   display: none;
@@ -112,10 +109,10 @@ html {
   .video-background {
     display: none; /* Hide video background */
   }
-
-  .desktop-image {
-    display: none; /* Hide desktop content */
+  .desktop-container{
+    display: none;
   }
+  
 
   .mobile-image {
     display: block; /* Show mobile image */
@@ -123,9 +120,17 @@ html {
     height: auto;
   }
 
+  
+  
+  body, html {
+    margin: 0;
+    padding: 0;
+    height: 100%;
+  }
+  
   .mobile-container {
     display: flex;
-    background: linear-gradient(to bottom, #007bff, #0056b3);
+    background: linear-gradient(to bottom right, #1e3c72, #2a5298);
     color: white;
     padding: 20px;
     height: 95vh;
@@ -133,7 +138,49 @@ html {
     align-items: center;
     flex-direction: column;
     text-align: center;
+    background-size: cover;
+    background-position: center;
   }
+  
+  .animated-text-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+  
+  .animated-text {
+    margin: 10px 0;
+    overflow: hidden;
+    white-space: nowrap;
+    animation: typing 2s steps(20, end);
+  }
+  
+  .animated-text.big {
+    font-size: 4em;
+    font-weight: bold;
+  }
+  
+  .animated-text.medium {
+    font-size: 3em;
+    font-weight: bold;
+  }
+  
+  .animated-text.small {
+    font-size: 2.5em;
+    font-weight: bold;
+  }
+  
+  @keyframes typing {
+    from {
+      width: 0;
+    }
+    to {
+      width: 100%;
+    }
+  }
+  
+  
+  
 }
 
 /* Button Styling */
@@ -260,3 +307,4 @@ footer .fab:hover {
     margin-bottom: 20px;
   }
 }
+
