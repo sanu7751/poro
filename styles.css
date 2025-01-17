@@ -294,7 +294,7 @@ body {
       display: none;
   }
   .mobile-image {
-    
+    display: block;
       width: 100%; /* Ensure it scales to fit */
       height: 100%;
 
