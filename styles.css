@@ -273,7 +273,7 @@ body {
 }
 
 /* Media query for smaller screens (mobile) */
-@media (max-width: 600px) {
+@media (max-width: 768px) {
   .video-background {
     display: none;
   }
@@ -296,7 +296,7 @@ body {
   .mobile-image {
       display: block;
       width: 100%; /* Ensure it scales to fit */
-      height: auto;
+      height: 800vh;
 
   }
 }
