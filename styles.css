@@ -285,7 +285,7 @@ body {
   .mobile-image {
       display: block;
       width: auto; /* Maintain aspect ratio */
-      height: 100vh; /* Full vertical length */
+      /*height: 100vh; Full vertical length */
       object-fit: cover; /* Ensure it fills the area */
   }
 }
