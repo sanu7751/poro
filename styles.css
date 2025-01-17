@@ -273,13 +273,8 @@ body {
 }
 
 /* Media query for smaller screens (mobile) */
-@media (max-width: 768px) {
-  .video-background {
-    display: none;
-  }
-  .s{
-    color: black;
-  }
+.mobile-image {
+  display: none;
 }
 
 /* Hide desktop image and show mobile image on smaller screens */
@@ -288,9 +283,23 @@ body {
       display: none;
   }
   .mobile-image {
-    display: block;
-      width: 100%; /* Ensure it scales to fit */
-      height: 100%;
+      display: block;
+      width: auto; /* Maintain aspect ratio */
+      height: 100vh; /* Full vertical length */
+      object-fit: cover; /* Ensure it fills the area */
+  }
+}
+
+/* Additional responsive styles if necessary */
+@media (max-width: 768px) {
+  .video-background {
+    display: none;
+  }
+  .s {
+    color: black;
+  }
+}
+</style>
 
   }
 }
