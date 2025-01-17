@@ -128,7 +128,7 @@ html {
     background: linear-gradient(to bottom, #007bff, #0056b3);
     color: white;
     padding: 20px;
-    height: 100vh;
+    height: 95vh;
     justify-content: center;
     align-items: center;
     flex-direction: column;
