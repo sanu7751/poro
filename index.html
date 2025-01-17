@@ -12,7 +12,7 @@
 <body>
 <!-- Background Video -->
 <video class="video-background" autoplay muted loop>
-  <source src="11.mp4" type="video/mp4">
+  <source src="bg.mp4" type="video/mp4">
 </video>
 
 
@@ -22,7 +22,7 @@
 
 
 
-    <!-- NAVBAR -->
+  
   <nav class="navbar navbar-expand-lg navbar-light fixed-top" style="background: linear-gradient(to right, #4e73df, #1cc88a);">
     <div class="container-fluid">
       <a class="navbar-brand" href="#" style="font-size: 1.5rem; font-weight: bold; color: white;">Attractive Navbar</a>
@@ -64,16 +64,15 @@
 
 
   <!--photo top 1 -->
-  <div class="responsive-image">
-    <img src="INTRO.jpg" class="desktop-image" alt="Desktop Image">
-  </div>
   
   <div class="mobile-container">
-    <h1>Welcome to Our Mobile Dashboard</h1>
-    <p>Enjoy a seamless experience designed just for mobile!</p>
-    <button class="cta-button">Get Started</button>
+    <div class="animated-text-container">
+      <h1 class="animated-text big">Hello!</h1>
+      <h2 class="animated-text medium">I am Sanu</h2>
+      <p class="animated-text small">Welcome to my website</p>
+    </div>
   </div>
-    
+  
  
   <br><br><br><br>
 
@@ -278,6 +277,19 @@ function changeColor() {
   const button = document.getElementById("randomColorButton");
   button.style.backgroundColor = getRandomColor();
 }
+
+// This script will split the text into individual span elements
+const texts = document.querySelectorAll('.text');
+texts.forEach((textElement) => {
+  const text = textElement.textContent;
+  textElement.innerHTML = '';
+  text.split('').forEach((char, index) => {
+    const span = document.createElement('span');
+    span.textContent = char;
+    span.style.setProperty('--index', index);
+    textElement.appendChild(span);
+  });
+});
 
 
 
