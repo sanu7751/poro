@@ -273,7 +273,7 @@ body {
 }
 
 /* Media query for smaller screens (mobile) */
-@media (max-width: 768px) {
+@media (max-width: 600px) {
   .video-background {
     display: none;
   }
