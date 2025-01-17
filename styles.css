@@ -282,12 +282,6 @@ body {
   }
 }
 
-
-    /* Hide mobile image by default */
-.mobile-image {
-  display: none;
-}
-
 /* Hide desktop image and show mobile image on smaller screens */
 @media (max-width: 768px) {
   .desktop-image {
