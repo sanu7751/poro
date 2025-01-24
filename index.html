@@ -3,94 +3,115 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Sanu Animation</title>
+  <title>Cubes to Text Animation</title>
   <style>
     body {
       margin: 0;
       overflow: hidden;
-      background: #000;
+      background: #000; /* Black background for better contrast */
     }
     canvas {
-      display: block;
+      display: block; /* Fullscreen canvas */
     }
   </style>
 </head>
 <body>
-  <canvas id="animationCanvas"></canvas>
-
+  <!-- Include the Three.js library -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
   <script>
-    const canvas = document.getElementById('animationCanvas');
-    const ctx = canvas.getContext('2d');
+    // Create Scene, Camera, and Renderer
+    const scene = new THREE.Scene();
+    const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+    const renderer = new THREE.WebGLRenderer();
+    renderer.setSize(window.innerWidth, window.innerHeight);
+    document.body.appendChild(renderer.domElement);
 
-    canvas.width = window.innerWidth;
-    canvas.height = window.innerHeight;
+    // Create a group to hold cubes
+    const cubeGroup = new THREE.Group();
+    const cubes = [];
+    const cubeSize = 1;
 
-    const particles = [];
-    const text = "Sanu";
-
-    // Particle class
-    class Particle {
-      constructor(x, y) {
-        this.x = Math.random() * canvas.width;
-        this.y = Math.random() * canvas.height;
-        this.targetX = x;
-        this.targetY = y;
-        this.radius = 2;
-        this.color = `hsl(${Math.random() * 360}, 70%, 50%)`;
-        this.speed = 0.05 + Math.random() * 0.05;
-      }
-
-      update() {
-        this.x += (this.targetX - this.x) * this.speed;
-        this.y += (this.targetY - this.y) * this.speed;
-      }
-
-      draw() {
-        ctx.beginPath();
-        ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
-        ctx.fillStyle = this.color;
-        ctx.fill();
+    // Generate a grid of cubes
+    for (let x = -10; x <= 10; x += cubeSize * 2) {
+      for (let y = -10; y <= 10; y += cubeSize * 2) {
+        const geometry = new THREE.BoxGeometry(cubeSize, cubeSize, cubeSize);
+        const material = new THREE.MeshBasicMaterial({
+          color: `hsl(${Math.random() * 360}, 70%, 50%)`, // Random colors
+        });
+        const cube = new THREE.Mesh(geometry, material);
+        cube.position.set(x, y, Math.random() * 5 - 5); // Random depth
+        cubes.push(cube);
+        cubeGroup.add(cube);
       }
     }
 
-    // Draw text on the canvas and extract its pixel data
-    function initParticles() {
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
-      ctx.font = "bold 150px Arial";
-      ctx.fillStyle = "white";
-      ctx.textAlign = "center";
-      ctx.fillText(text, canvas.width / 2, canvas.height / 2);
+    scene.add(cubeGroup);
 
-      const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height).data;
-
-      for (let y = 0; y < canvas.height; y += 5) {
-        for (let x = 0; x < canvas.width; x += 5) {
-          const index = (y * canvas.width + x) * 4;
-          if (imageData[index + 3] > 128) {
-            particles.push(new Particle(x, y));
-          }
-        }
+    // Load and create the text
+    let textMesh;
+    const loader = new THREE.FontLoader();
+    loader.load(
+      "https://threejs.org/examples/fonts/helvetiker_regular.typeface.json",
+      (font) => {
+        const textGeometry = new THREE.TextGeometry("Sanu", {
+          font: font,
+          size: 2,
+          height: 0.5,
+        });
+        const textMaterial = new THREE.MeshBasicMaterial({ color: 0xffffff });
+        textMesh = new THREE.Mesh(textGeometry, textMaterial);
+        textMesh.position.set(-6, -1, 0); // Center the text
+        textMesh.visible = false; // Initially hidden
+        scene.add(textMesh);
       }
-    }
+    );
+
+    // Animation phases
+    camera.position.z = 20; // Set camera distance
+    let animationPhase = 0; // 0 = cubes rotating, 1 = transition, 2 = text displayed
 
     function animate() {
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
-      particles.forEach(particle => {
-        particle.update();
-        particle.draw();
-      });
       requestAnimationFrame(animate);
+
+      if (animationPhase === 0) {
+        // Rotate the cube group
+        cubeGroup.rotation.y += 0.01;
+        cubeGroup.rotation.x += 0.005;
+
+        // Randomly start the transition
+        if (Math.random() > 0.99) {
+          animationPhase = 1;
+        }
+      } else if (animationPhase === 1) {
+        // Transition cubes to scatter and shrink
+        cubes.forEach((cube, index) => {
+          const delay = index * 0.01;
+          setTimeout(() => {
+            cube.position.x += (Math.random() - 0.5) * 0.5;
+            cube.position.y += (Math.random() - 0.5) * 0.5;
+            cube.position.z += (Math.random() - 0.5) * 0.5;
+            cube.scale.set(0.1, 0.1, 0.1); // Shrink cubes
+
+            // After last cube transitions, show the text
+            if (index === cubes.length - 1) {
+              cubeGroup.visible = false; // Hide cubes
+              if (textMesh) textMesh.visible = true; // Show the text
+              animationPhase = 2;
+            }
+          }, delay * 1000); // Staggered timing
+        });
+      }
+
+      renderer.render(scene, camera);
     }
 
-    initParticles();
     animate();
 
-    // Handle resize
+    // Handle window resizing
     window.addEventListener("resize", () => {
-      canvas.width = window.innerWidth;
-      canvas.height = window.innerHeight;
-      particles.length = 0; // Clear particles
-      initParticles();
+      renderer.setSize(window.innerWidth, window.innerHeight);
+      camera.aspect = window.innerWidth / window.innerHeight;
+      camera.updateProjectionMatrix();
     });
   </script>
 </body>
