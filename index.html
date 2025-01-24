@@ -3,116 +3,106 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Cubes to Text Animation</title>
+  <title>Lines to Name and Animal</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.6.0/p5.min.js"></script>
   <style>
     body {
       margin: 0;
       overflow: hidden;
-      background: #000; /* Black background for better contrast */
-    }
-    canvas {
-      display: block; /* Fullscreen canvas */
+      background: #000;
     }
   </style>
 </head>
 <body>
-  <!-- Include the Three.js library -->
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
   <script>
-    // Create Scene, Camera, and Renderer
-    const scene = new THREE.Scene();
-    const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
-    const renderer = new THREE.WebGLRenderer();
-    renderer.setSize(window.innerWidth, window.innerHeight);
-    document.body.appendChild(renderer.domElement);
+    let points = [];
+    let nameFont;
+    let phase = 0; // 0: lines forming name, 1: transition to animal
+    let transitionProgress = 0;
+    let animalPoints = [];
 
-    // Create a group to hold cubes
-    const cubeGroup = new THREE.Group();
-    const cubes = [];
-    const cubeSize = 1;
+    function preload() {
+      nameFont = loadFont('https://cdnjs.cloudflare.com/ajax/libs/ink/3.1.10/fonts/RobotoMono-Regular.ttf'); // Load a custom font
+    }
 
-    // Generate a grid of cubes
-    for (let x = -10; x <= 10; x += cubeSize * 2) {
-      for (let y = -10; y <= 10; y += cubeSize * 2) {
-        const geometry = new THREE.BoxGeometry(cubeSize, cubeSize, cubeSize);
-        const material = new THREE.MeshBasicMaterial({
-          color: `hsl(${Math.random() * 360}, 70%, 50%)`, // Random colors
-        });
-        const cube = new THREE.Mesh(geometry, material);
-        cube.position.set(x, y, Math.random() * 5 - 5); // Random depth
-        cubes.push(cube);
-        cubeGroup.add(cube);
+    function setup() {
+      createCanvas(windowWidth, windowHeight);
+      textFont(nameFont);
+
+      // Generate points for the name "Sanu"
+      let namePath = nameFont.textToPoints("Sanu", width / 4, height / 2, 200, {
+        sampleFactor: 0.1,
+      });
+      points = namePath.map(p => ({
+        x: p.x,
+        y: p.y,
+        originalX: p.x,
+        originalY: p.y,
+      }));
+
+      // Generate random points for the "animal" (a circle for now, can be replaced with other shapes)
+      for (let i = 0; i < points.length; i++) {
+        let angle = map(i, 0, points.length, 0, TWO_PI);
+        let radius = 150;
+        let x = width / 2 + cos(angle) * radius;
+        let y = height / 2 + sin(angle) * radius;
+        animalPoints.push({ x, y });
       }
     }
 
-    scene.add(cubeGroup);
+    function draw() {
+      background(0);
 
-    // Load and create the text
-    let textMesh;
-    const loader = new THREE.FontLoader();
-    loader.load(
-      "https://threejs.org/examples/fonts/helvetiker_regular.typeface.json",
-      (font) => {
-        const textGeometry = new THREE.TextGeometry("Sanu", {
-          font: font,
-          size: 2,
-          height: 0.5,
-        });
-        const textMaterial = new THREE.MeshBasicMaterial({ color: 0xffffff });
-        textMesh = new THREE.Mesh(textGeometry, textMaterial);
-        textMesh.position.set(-6, -1, 0); // Center the text
-        textMesh.visible = false; // Initially hidden
-        scene.add(textMesh);
-      }
-    );
+      // Phase 0: Lines forming the name
+      if (phase === 0) {
+        for (let i = 0; i < points.length; i++) {
+          let p = points[i];
+          stroke(255);
+          strokeWeight(2);
+          if (i > 0) {
+            let prev = points[i - 1];
+            line(prev.x, prev.y, p.x, p.y); // Draw lines connecting points
+          }
 
-    // Animation phases
-    camera.position.z = 20; // Set camera distance
-    let animationPhase = 0; // 0 = cubes rotating, 1 = transition, 2 = text displayed
-
-    function animate() {
-      requestAnimationFrame(animate);
-
-      if (animationPhase === 0) {
-        // Rotate the cube group
-        cubeGroup.rotation.y += 0.01;
-        cubeGroup.rotation.x += 0.005;
-
-        // Randomly start the transition
-        if (Math.random() > 0.99) {
-          animationPhase = 1;
+          // Gradually form the name
+          p.x = lerp(p.x, p.originalX, 0.05);
+          p.y = lerp(p.y, p.originalY, 0.05);
         }
-      } else if (animationPhase === 1) {
-        // Transition cubes to scatter and shrink
-        cubes.forEach((cube, index) => {
-          const delay = index * 0.01;
-          setTimeout(() => {
-            cube.position.x += (Math.random() - 0.5) * 0.5;
-            cube.position.y += (Math.random() - 0.5) * 0.5;
-            cube.position.z += (Math.random() - 0.5) * 0.5;
-            cube.scale.set(0.1, 0.1, 0.1); // Shrink cubes
 
-            // After last cube transitions, show the text
-            if (index === cubes.length - 1) {
-              cubeGroup.visible = false; // Hide cubes
-              if (textMesh) textMesh.visible = true; // Show the text
-              animationPhase = 2;
-            }
-          }, delay * 1000); // Staggered timing
-        });
+        // Transition to animal shape
+        if (frameCount > 150) {
+          phase = 1;
+        }
       }
 
-      renderer.render(scene, camera);
+      // Phase 1: Transition to animal
+      if (phase === 1) {
+        transitionProgress += 0.02;
+        for (let i = 0; i < points.length; i++) {
+          let p = points[i];
+          let target = animalPoints[i];
+          stroke(0, 255, 0);
+          strokeWeight(2);
+          if (i > 0) {
+            let prev = points[i - 1];
+            line(prev.x, prev.y, p.x, p.y);
+          }
+
+          // Interpolate points to animal shape
+          p.x = lerp(p.x, target.x, transitionProgress);
+          p.y = lerp(p.y, target.y, transitionProgress);
+        }
+
+        // Stop the animation after the transition
+        if (transitionProgress >= 1) {
+          noLoop(); // Stops the draw loop once the animal shape is formed
+        }
+      }
     }
 
-    animate();
-
-    // Handle window resizing
-    window.addEventListener("resize", () => {
-      renderer.setSize(window.innerWidth, window.innerHeight);
-      camera.aspect = window.innerWidth / window.innerHeight;
-      camera.updateProjectionMatrix();
-    });
+    function windowResized() {
+      resizeCanvas(windowWidth, windowHeight);
+    }
   </script>
 </body>
 </html>
