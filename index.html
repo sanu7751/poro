@@ -3,106 +3,78 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Lines to Name and Animal</title>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.6.0/p5.min.js"></script>
+  <title>Sanu Logo Animation</title>
   <style>
     body {
       margin: 0;
       overflow: hidden;
-      background: #000;
+    }
+    canvas {
+      display: block;
     }
   </style>
 </head>
 <body>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r146/three.min.js"></script>
   <script>
-    let points = [];
-    let nameFont;
-    let phase = 0; // 0: lines forming name, 1: transition to animal
-    let transitionProgress = 0;
-    let animalPoints = [];
+    // Set up the scene, camera, and renderer
+    const scene = new THREE.Scene();
+    const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+    const renderer = new THREE.WebGLRenderer({ antialias: true });
+    renderer.setSize(window.innerWidth, window.innerHeight);
+    document.body.appendChild(renderer.domElement);
 
-    function preload() {
-      nameFont = loadFont('https://cdnjs.cloudflare.com/ajax/libs/ink/3.1.10/fonts/RobotoMono-Regular.ttf'); // Load a custom font
-    }
-
-    function setup() {
-      createCanvas(windowWidth, windowHeight);
-      textFont(nameFont);
-
-      // Generate points for the name "Sanu"
-      let namePath = nameFont.textToPoints("Sanu", width / 4, height / 2, 200, {
-        sampleFactor: 0.1,
+    // Add text geometry for "Sanu"
+    const fontLoader = new THREE.FontLoader();
+    fontLoader.load('https://threejs.org/examples/fonts/helvetiker_regular.typeface.json', (font) => {
+      const textGeometry = new THREE.TextGeometry('Sanu', {
+        font: font,
+        size: 1,
+        height: 0.2,
       });
-      points = namePath.map(p => ({
-        x: p.x,
-        y: p.y,
-        originalX: p.x,
-        originalY: p.y,
-      }));
+      const textMaterial = new THREE.MeshBasicMaterial({ color: 0x007bff });
+      const textMesh = new THREE.Mesh(textGeometry, textMaterial);
+      textMesh.position.set(-2, 0, 0);
+      scene.add(textMesh);
+    });
 
-      // Generate random points for the "animal" (a circle for now, can be replaced with other shapes)
-      for (let i = 0; i < points.length; i++) {
-        let angle = map(i, 0, points.length, 0, TWO_PI);
-        let radius = 150;
-        let x = width / 2 + cos(angle) * radius;
-        let y = height / 2 + sin(angle) * radius;
-        animalPoints.push({ x, y });
-      }
-    }
+    // Add two animated connecting lines
+    const createLine = (xStart, xEnd) => {
+      const lineMaterial = new THREE.LineBasicMaterial({ color: 0x00c6ff });
+      const lineGeometry = new THREE.BufferGeometry().setFromPoints([
+        new THREE.Vector3(xStart, 0, 0),
+        new THREE.Vector3(xEnd, 0, 0),
+      ]);
+      return new THREE.Line(lineGeometry, lineMaterial);
+    };
 
-    function draw() {
-      background(0);
+    const line1 = createLine(-5, -2.5);
+    const line2 = createLine(2.5, 5);
+    scene.add(line1, line2);
 
-      // Phase 0: Lines forming the name
-      if (phase === 0) {
-        for (let i = 0; i < points.length; i++) {
-          let p = points[i];
-          stroke(255);
-          strokeWeight(2);
-          if (i > 0) {
-            let prev = points[i - 1];
-            line(prev.x, prev.y, p.x, p.y); // Draw lines connecting points
-          }
+    // Animation logic
+    let speed = 0.01;
+    function animateLines() {
+      line1.geometry.attributes.position.array[3] += speed; // Extend the right end of line1
+      line2.geometry.attributes.position.array[0] -= speed; // Extend the left end of line2
 
-          // Gradually form the name
-          p.x = lerp(p.x, p.originalX, 0.05);
-          p.y = lerp(p.y, p.originalY, 0.05);
-        }
-
-        // Transition to animal shape
-        if (frameCount > 150) {
-          phase = 1;
-        }
+      if (line1.geometry.attributes.position.array[3] >= -2 || line2.geometry.attributes.position.array[0] <= 2.5) {
+        speed = -speed; // Reverse direction when max size is reached
       }
 
-      // Phase 1: Transition to animal
-      if (phase === 1) {
-        transitionProgress += 0.02;
-        for (let i = 0; i < points.length; i++) {
-          let p = points[i];
-          let target = animalPoints[i];
-          stroke(0, 255, 0);
-          strokeWeight(2);
-          if (i > 0) {
-            let prev = points[i - 1];
-            line(prev.x, prev.y, p.x, p.y);
-          }
-
-          // Interpolate points to animal shape
-          p.x = lerp(p.x, target.x, transitionProgress);
-          p.y = lerp(p.y, target.y, transitionProgress);
-        }
-
-        // Stop the animation after the transition
-        if (transitionProgress >= 1) {
-          noLoop(); // Stops the draw loop once the animal shape is formed
-        }
-      }
+      line1.geometry.attributes.position.needsUpdate = true;
+      line2.geometry.attributes.position.needsUpdate = true;
     }
 
-    function windowResized() {
-      resizeCanvas(windowWidth, windowHeight);
+    // Animate the scene
+    camera.position.z = 10;
+    function animate() {
+      requestAnimationFrame(animate);
+      animateLines();
+      renderer.render(scene, camera);
     }
+
+    animate();
   </script>
 </body>
 </html>
