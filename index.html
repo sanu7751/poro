@@ -1,80 +1,72 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Sanu Logo Animation</title>
-  <style>
-    body {
-      margin: 0;
-      overflow: hidden;
-    }
-    canvas {
-      display: block;
-    }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Three.js Animated Logo</title>
+    <style>
+        body { margin: 0; }
+        canvas { display: block; }
+    </style>
 </head>
 <body>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r146/three.min.js"></script>
-  <script>
-    // Set up the scene, camera, and renderer
-    const scene = new THREE.Scene();
-    const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
-    const renderer = new THREE.WebGLRenderer({ antialias: true });
-    renderer.setSize(window.innerWidth, window.innerHeight);
-    document.body.appendChild(renderer.domElement);
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script>
+      // Initialize the scene, camera, and renderer
+const scene = new THREE.Scene();
+const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+const renderer = new THREE.WebGLRenderer({ antialias: true });
 
-    // Add text geometry for "Sanu"
-    const fontLoader = new THREE.FontLoader();
-    fontLoader.load('https://threejs.org/examples/fonts/helvetiker_regular.typeface.json', (font) => {
-      const textGeometry = new THREE.TextGeometry('Sanu', {
+renderer.setSize(window.innerWidth, window.innerHeight);
+document.body.appendChild(renderer.domElement);
+
+// Add a light source
+const light = new THREE.DirectionalLight(0xffffff, 1);
+light.position.set(0, 1, 1).normalize();
+scene.add(light);
+
+// Load a font and create 3D text
+const loader = new THREE.FontLoader();
+loader.load('https://threejs.org/examples/fonts/helvetiker_regular.typeface.json', function (font) {
+    const textGeometry = new THREE.TextGeometry('Sanu', {
         font: font,
-        size: 1,
-        height: 0.2,
-      });
-      const textMaterial = new THREE.MeshBasicMaterial({ color: 0x007bff });
-      const textMesh = new THREE.Mesh(textGeometry, textMaterial);
-      textMesh.position.set(-2, 0, 0);
-      scene.add(textMesh);
+        size: 5,
+        height: 1,
+        curveSegments: 12,
+        bevelEnabled: true,
+        bevelThickness: 0.5,
+        bevelSize: 0.3,
+        bevelSegments: 5
     });
 
-    // Add two animated connecting lines
-    const createLine = (xStart, xEnd) => {
-      const lineMaterial = new THREE.LineBasicMaterial({ color: 0x00c6ff });
-      const lineGeometry = new THREE.BufferGeometry().setFromPoints([
-        new THREE.Vector3(xStart, 0, 0),
-        new THREE.Vector3(xEnd, 0, 0),
-      ]);
-      return new THREE.Line(lineGeometry, lineMaterial);
-    };
+    const textMaterial = new THREE.MeshPhongMaterial({ color: 0x61dafb });
+    const textMesh = new THREE.Mesh(textGeometry, textMaterial);
 
-    const line1 = createLine(-5, -2.5);
-    const line2 = createLine(2.5, 5);
-    scene.add(line1, line2);
+    textMesh.position.x = -7; // Adjust this value to center the text
+    scene.add(textMesh);
 
-    // Animation logic
-    let speed = 0.01;
-    function animateLines() {
-      line1.geometry.attributes.position.array[3] += speed; // Extend the right end of line1
-      line2.geometry.attributes.position.array[0] -= speed; // Extend the left end of line2
-
-      if (line1.geometry.attributes.position.array[3] >= -2 || line2.geometry.attributes.position.array[0] <= 2.5) {
-        speed = -speed; // Reverse direction when max size is reached
-      }
-
-      line1.geometry.attributes.position.needsUpdate = true;
-      line2.geometry.attributes.position.needsUpdate = true;
-    }
-
-    // Animate the scene
-    camera.position.z = 10;
+    // Animation loop
     function animate() {
-      requestAnimationFrame(animate);
-      animateLines();
-      renderer.render(scene, camera);
+        requestAnimationFrame(animate);
+
+        // Rotate the text
+        textMesh.rotation.x += 0.01;
+        textMesh.rotation.y += 0.01;
+
+        renderer.render(scene, camera);
     }
 
     animate();
-  </script>
+});
+
+camera.position.z = 15;
+
+// Handle window resize
+window.addEventListener('resize', () => {
+    renderer.setSize(window.innerWidth, window.innerHeight);
+    camera.aspect = window.innerWidth / window.innerHeight;
+    camera.updateProjectionMatrix();
+});
+    </script>
 </body>
-</html>
+</html
